@@ -5,6 +5,11 @@
 var express = require('express');
 var app = express();
 
+// Helper Functions
+getOutput = (inputDate) => { return { unix: inputDate.getTime(), utc: inputDate.toUTCString() }; };
+
+inputHasNumbersOnly = (value) => { return /^\d+$/.test(value); };
+
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
 var cors = require('cors');
@@ -24,7 +29,26 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
+app.get('/api', (req, res) => {  
+  res.send(getOutput(new Date()));
+});
 
+app.get('/api/:date', (req, res) => {
+  const input = req.params.date;
+
+  if (inputHasNumbersOnly(input)) {
+    res.send(getOutput(new Date(new Number(input))));
+
+    return;
+  }
+
+  const inputDate = new Date(input);
+  const invalidDate = 'Invalid Date';
+
+  inputDate == invalidDate 
+    ? res.send({ error: invalidDate })
+    : res.send(getOutput(inputDate));
+});
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
